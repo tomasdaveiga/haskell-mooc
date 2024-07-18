@@ -12,7 +12,6 @@ import qualified Data.Map as Map
 
 import Examples.Bank
 
-
 ------------------------------------------------------------------------------
 -- Ex 1: Your task is to help implement the function readName that
 -- given a string like "Forename Surname" produces the pair
@@ -47,19 +46,24 @@ readNames s =
 -- (NB! There are obviously other corner cases like the inputs " " and
 -- "a b c", but you don't need to worry about those here)
 split :: String -> Maybe (String,String)
-split = todo
+split name = case words name of
+  (x:xs:[]) -> Just (x, xs)
+  _         -> Nothing
 
 -- checkNumber should take a pair of two strings and return them
 -- unchanged if they don't contain numbers. Otherwise Nothing is
 -- returned.
 checkNumber :: (String, String) -> Maybe (String, String)
-checkNumber = todo
+checkNumber (a,b) = if intersect "0123456789" a /= "" || intersect "0123456789" b /= "" then Nothing else Just (a,b)
 
 -- checkCapitals should take a pair of two strings and return them
 -- unchanged if both start with a capital letter. Otherwise Nothing is
 -- returned.
 checkCapitals :: (String, String) -> Maybe (String, String)
-checkCapitals (for,sur) = todo
+checkCapitals (for,sur)
+  | isLower (head for) = Nothing
+  | isLower (head sur) = Nothing
+  | otherwise          = Just (for,sur)
 
 ------------------------------------------------------------------------------
 -- Ex 2: Given a list of players and their scores (as [(String,Int)]),
@@ -86,7 +90,18 @@ checkCapitals (for,sur) = todo
 --     ==> Just "a"
 
 winner :: [(String,Int)] -> String -> String -> Maybe String
-winner scores player1 player2 = todo
+winner scores player1 player2 = getScores scores player1 player2
+  ?> getWinner
+
+getWinner :: [(String,Int)] -> Maybe String
+getWinner [(play1,x), (play2,y)]
+  | x >= y    = Just play1
+  | otherwise = Just play2
+
+getScores :: [(String,Int)] -> String -> String -> Maybe [(String,Int)]
+getScores scores player1 player2 = case (lookup player1 scores, lookup player2 scores) of
+  (Just x, Just y) -> Just [(player1,x), (player2,y)]
+  _                -> Nothing
 
 ------------------------------------------------------------------------------
 -- Ex 3: given a list of indices and a list of values, return the sum
@@ -104,7 +119,11 @@ winner scores player1 player2 = todo
 --    Nothing
 
 selectSum :: Num a => [a] -> [Int] -> Maybe a
-selectSum xs is = todo
+selectSum xs is = do i <- is
+                     safeIndex xs i >>= (+0) >>= return
+
+safeIndex :: [a] -> Int -> Maybe a
+safeIndex xs val = if length xs > val then Just (xs !! val) else Nothing
 
 ------------------------------------------------------------------------------
 -- Ex 4: Here is the Logger monad from the course material. Implement
