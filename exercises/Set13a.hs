@@ -119,11 +119,14 @@ getScores scores player1 player2 = case (lookup player1 scores, lookup player2 s
 --    Nothing
 
 selectSum :: Num a => [a] -> [Int] -> Maybe a
-selectSum xs is = do i <- is
-                     safeIndex xs i >>= (+0) >>= return
+selectSum xs is = do 
+  values <- mapM (safeIndex xs) is
+  return (sum values)
 
 safeIndex :: [a] -> Int -> Maybe a
-safeIndex xs val = if length xs > val then Just (xs !! val) else Nothing
+safeIndex xs val
+  | val >= 0, length xs > val = Just (xs !! val)
+  | otherwise = Nothing
 
 ------------------------------------------------------------------------------
 -- Ex 4: Here is the Logger monad from the course material. Implement
@@ -157,7 +160,9 @@ instance Applicative Logger where
   (<*>) = ap
 
 countAndLog :: Show a => (a -> Bool) -> [a] -> Logger Int
-countAndLog = todo
+countAndLog f xs = Logger (map show filteredList) (length filteredList)
+  where
+    filteredList = filter f xs
 
 ------------------------------------------------------------------------------
 -- Ex 5: You can find the Bank and BankOp code from the course
@@ -174,7 +179,9 @@ exampleBank :: Bank
 exampleBank = (Bank (Map.fromList [("harry",10),("cedric",7),("ginny",1)]))
 
 balance :: String -> BankOp Int
-balance accountName = todo
+balance accountName = BankOp balanceHelper
+  where
+    balanceHelper (Bank accounts) = (Map.findWithDefault 0 accountName accounts, Bank accounts)
 
 ------------------------------------------------------------------------------
 -- Ex 6: Using the operations balance, withdrawOp and depositOp, and
